@@ -44,10 +44,10 @@ func printQuestion(question, answer string) {
 	input := bufio.NewReader(os.Stdin)
 	text, _ := input.ReadString('\n')
 
-	if strings.Compare(text, answer) == 0 {
+	if strings.TrimRight(text, "\n") == answer {
 		fmt.Print("Correct Answer!")
 	} else {
-		fmt.Print("Incorrect Answer!")
+		fmt.Printf("Incorrect Answer! Expecting %s\n", answer)
 	}
 }
 
