@@ -10,21 +10,33 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
 	sheet := loadProblems("files/problems.csv")
-	answ, quest := calcScore(sheet)
-	fmt.Printf("You scored: %d/%d\n", answ, quest)
 }
 
-func loadProblems(filepath string) (results []bool) {
+func roundTimer() {
+	ticker := time.NewTicker(1 * time.Second)
+	go func() {
+		for t := range ticker.C {
+			fmt.Println(t)
+		}
+	}()
+	time.Sleep(10 * time.Second)
+	ticker.Stop()
+	fmt.Println("Time Up!")
+}
+
+func loadProblems(filepath string) {
 	var scoresheet []bool
 	data, err := ioutil.ReadFile(filepath)
 	checkErr(err)
 
 	//fmt.Printf("DATA: %v\n", string(data))
 
+	go roundTimer()
 	reader := csv.NewReader(strings.NewReader(string(data)))
 
 	for {
@@ -38,7 +50,8 @@ func loadProblems(filepath string) (results []bool) {
 
 		scoresheet = append(scoresheet, printQuestion(record[0], record[1]))
 	}
-	return scoresheet
+	answ, quest := calcScore(scoresheet)
+	fmt.Printf("You scored: %d/%d\n", answ, quest)
 }
 
 func printQuestion(question, answer string) (result bool) {
