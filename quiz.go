@@ -14,7 +14,8 @@ import (
 )
 
 func main() {
-	sheet := loadProblems("files/problems.csv")
+	go roundTimer()
+	loadProblems("files/problems.csv")
 }
 
 func roundTimer() {
@@ -34,9 +35,6 @@ func loadProblems(filepath string) {
 	data, err := ioutil.ReadFile(filepath)
 	checkErr(err)
 
-	//fmt.Printf("DATA: %v\n", string(data))
-
-	go roundTimer()
 	reader := csv.NewReader(strings.NewReader(string(data)))
 
 	for {
