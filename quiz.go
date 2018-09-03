@@ -14,42 +14,54 @@ import (
 )
 
 func main() {
-	go roundTimer()
-	loadProblems("files/problems.csv")
-}
-
-func roundTimer() {
-	ticker := time.NewTicker(1 * time.Second)
-	go func() {
-		for t := range ticker.C {
-			fmt.Println(t)
-		}
-	}()
-	time.Sleep(10 * time.Second)
-	ticker.Stop()
-	fmt.Println("Time Up!")
-}
-
-func loadProblems(filepath string) {
+	var signal chan bool
 	var scoresheet []bool
-	data, err := ioutil.ReadFile(filepath)
-	checkErr(err)
 
-	reader := csv.NewReader(strings.NewReader(string(data)))
+	signal = make(chan bool)
+	reader := loadProblems("files/problems.csv")
+	go roundTimer(signal)
+
+	fmt.Println("Welcome to Quiz Show!")
 
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
+			close(signal)
 			break
 		}
 		if err != nil {
 			log.Fatal(err)
 		}
-
+		stop := <-signal
 		scoresheet = append(scoresheet, printQuestion(record[0], record[1]))
+		if stop == false {
+			fmt.Println("Time Up!\n")
+			break
+		}
 	}
 	answ, quest := calcScore(scoresheet)
 	fmt.Printf("You scored: %d/%d\n", answ, quest)
+}
+
+func roundTimer(signal chan bool) {
+	time.NewTimer(10 * time.Second)
+	// go func() {
+	// 	for t := range ticker.C {
+	// 		fmt.Println(t)
+	// 	}
+	// }()
+	// time.After(10 * time.Second)
+	// ticker.Stop()
+	signal <- false
+}
+
+func loadProblems(filepath string) *csv.Reader {
+	data, err := ioutil.ReadFile(filepath)
+	checkErr(err)
+
+	reader := csv.NewReader(strings.NewReader(string(data)))
+
+	return reader
 }
 
 func printQuestion(question, answer string) (result bool) {
